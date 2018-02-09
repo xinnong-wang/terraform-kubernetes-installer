@@ -7,7 +7,7 @@ module "k8s-tls" {
   ca_cert                = "${var.ca_cert}"
   ca_key                 = "${var.ca_key}"
   api_server_admin_token = "${var.api_server_admin_token}"
-  master_lb_public_ip    = "${module.k8smaster-public-lb.ip_addresses[0]}"
+  master_lb_public_ip    = "${module.k8smaster-public-lb.k8s_master_ip}"
   ssh_private_key        = "${var.ssh_private_key}"
   ssh_public_key_openssh = "${var.ssh_public_key_openssh}"
 }
@@ -328,7 +328,7 @@ module "instances-k8sworker-ad1" {
   oracle_linux_image_name    = "${var.worker_ol_image_name}"
   k8s_ver                    = "${var.k8s_ver}"
   label_prefix               = "${var.label_prefix}"
-  master_lb                  = "https://${module.k8smaster-public-lb.ip_addresses[0]}:443"
+  master_lb                  = "${module.k8smaster-public-lb.k8s_master_ip}"
   region                     = "${var.region}"
   root_ca_key                = "${module.k8s-tls.root_ca_key}"
   root_ca_pem                = "${module.k8s-tls.root_ca_pem}"
@@ -369,7 +369,7 @@ module "instances-k8sworker-ad2" {
   oracle_linux_image_name    = "${var.worker_ol_image_name}"
   k8s_ver                    = "${var.k8s_ver}"
   label_prefix               = "${var.label_prefix}"
-  master_lb                  = "https://${module.k8smaster-public-lb.ip_addresses[0]}:443"
+  master_lb                  = "${module.k8smaster-public-lb.k8s_master_ip}"
   region                     = "${var.region}"
   root_ca_key                = "${module.k8s-tls.root_ca_key}"
   root_ca_pem                = "${module.k8s-tls.root_ca_pem}"
@@ -410,7 +410,7 @@ module "instances-k8sworker-ad3" {
   oracle_linux_image_name    = "${var.worker_ol_image_name}"
   k8s_ver                    = "${var.k8s_ver}"
   label_prefix               = "${var.label_prefix}"
-  master_lb                  = "https://${module.k8smaster-public-lb.ip_addresses[0]}:443"
+  master_lb                  = "${module.k8smaster-public-lb.k8s_master_ip}"
   region                     = "${var.region}"
   root_ca_key                = "${module.k8s-tls.root_ca_key}"
   root_ca_pem                = "${module.k8s-tls.root_ca_pem}"
@@ -455,6 +455,8 @@ module "etcd-lb" {
 
 module "k8smaster-public-lb" {
   source           = "./network/loadbalancers/k8smaster"
+  count                = "${var.master_lb_enabled=="true"? 1 : 0 }"
+  master_lb_enabled    = "${var.master_lb_enabled}"
   compartment_ocid = "${var.compartment_ocid}"
   is_private       = "${var.k8s_master_lb_access == "private" ? "true": "false"}"
 
@@ -475,5 +477,5 @@ module "kubeconfig" {
   source                     = "./kubernetes/kubeconfig"
   api_server_private_key_pem = "${module.k8s-tls.api_server_private_key_pem}"
   api_server_cert_pem        = "${module.k8s-tls.api_server_cert_pem}"
-  k8s_master                 = "https://${module.k8smaster-public-lb.ip_addresses[0]}:443"
+  k8s_master                 = "{module.k8smaster-public-lb.k8s_master_ip}"
 }
