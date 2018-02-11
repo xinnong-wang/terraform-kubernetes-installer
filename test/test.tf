@@ -22,22 +22,14 @@ output "ccd" {
   value = "${var.aa}"
 }
 
-data "template_file" "nginx" {
-  template = "${file("${path.module}/nginx/nginx.conf")}"
-
-  vars {
-    servers = "${join("\n", formatlist("        server %s.example.com;", var.hosts))}"
-  }
-}
-
 output "ccd2" {
   value = "${join("\n", formatlist("        server %s.example.com;", var.hosts))}"
 }
-output "ccd3" {
-  value = "${data.template_file.nginx.rendered}"
+
+output "etcdAd1Count333" {
+  value = "${var.etcdAd1Count}"
 }
-resource "null_resource" "ansible-provision" { 
-    provisioner "local-exec" {
-    command = "echo '${join("\n", formatlist("%s.example.com", var.hosts))}' > ansible_hosts"
-    }
+
+output "dd2" {
+  value = "${var.etcdAd1Count>0?1:0}"
 }

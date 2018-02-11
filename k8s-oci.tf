@@ -1,5 +1,10 @@
 ### CA and Cluster Certificates
 
+locals {
+  master_ip       = "${var.master_lb_enabled=="true"? element(concat(module.k8smaster-public-lb.ip_addresses, list("")), 0) : "127.0.0.1"}"
+  master_address  = "${format("https://%s:%s", local.master_ip, var.master_lb_enabled?"443":"6443")}"
+}
+
 module "k8s-tls" {
   source                 = "./tls/"
   api_server_private_key = "${var.api_server_private_key}"
@@ -7,7 +12,7 @@ module "k8s-tls" {
   ca_cert                = "${var.ca_cert}"
   ca_key                 = "${var.ca_key}"
   api_server_admin_token = "${var.api_server_admin_token}"
-  master_lb_public_ip    = "${module.k8smaster-public-lb.k8s_master_ip}"
+  master_lb_public_ip    = "${local.master_ip}"
   ssh_private_key        = "${var.ssh_private_key}"
   ssh_public_key_openssh = "${var.ssh_public_key_openssh}"
 }
@@ -328,7 +333,7 @@ module "instances-k8sworker-ad1" {
   oracle_linux_image_name    = "${var.worker_ol_image_name}"
   k8s_ver                    = "${var.k8s_ver}"
   label_prefix               = "${var.label_prefix}"
-  master_lb                  = "${module.k8smaster-public-lb.k8s_master_ip}"
+  master_lb                  = "${local.master_address}"
   region                     = "${var.region}"
   root_ca_key                = "${module.k8s-tls.root_ca_key}"
   root_ca_pem                = "${module.k8s-tls.root_ca_pem}"
@@ -369,7 +374,7 @@ module "instances-k8sworker-ad2" {
   oracle_linux_image_name    = "${var.worker_ol_image_name}"
   k8s_ver                    = "${var.k8s_ver}"
   label_prefix               = "${var.label_prefix}"
-  master_lb                  = "${module.k8smaster-public-lb.k8s_master_ip}"
+  master_lb                  = "${local.master_address}"
   region                     = "${var.region}"
   root_ca_key                = "${module.k8s-tls.root_ca_key}"
   root_ca_pem                = "${module.k8s-tls.root_ca_pem}"
@@ -410,7 +415,7 @@ module "instances-k8sworker-ad3" {
   oracle_linux_image_name    = "${var.worker_ol_image_name}"
   k8s_ver                    = "${var.k8s_ver}"
   label_prefix               = "${var.label_prefix}"
-  master_lb                  = "${module.k8smaster-public-lb.k8s_master_ip}"
+  master_lb                  = "${local.master_address}"
   region                     = "${var.region}"
   root_ca_key                = "${module.k8s-tls.root_ca_key}"
   root_ca_pem                = "${module.k8s-tls.root_ca_pem}"
@@ -473,9 +478,26 @@ module "k8smaster-public-lb" {
   shape                     = "${var.k8sMasterLBShape}"
 }
 
+module "nginx-lb" {
+  count            = "${var.k8sWorkerAd1Count + var.k8sWorkerAd2Count + var.k8sWorkerAd3Count + (var.control_plane_subnet_access == "private"? 
+  (((var.nat_instance_ad1_enabled == "true")? 1:0) + ((var.nat_instance_ad2_enabled == "true")? 1:0) + ((var.nat_instance_ad3_enabled == "true")? 1:0)):0)}"
+  private_key      = "${module.k8s-tls.ssh_private_key}"
+  source           = "./nginx"
+  hosts            = "${var.control_plane_subnet_access == "private"? 
+  concat(module.instances-k8sworker-ad1.private_ips,module.instances-k8sworker-ad2.private_ips,module.instances-k8sworker-ad3.private_ips): 
+  concat(module.instances-k8sworker-ad1.public_ips,module.instances-k8sworker-ad2.public_ips,module.instances-k8sworker-ad3.public_ips)}"
+}
+
+# module "nginx-lb" {
+#   count            = "${length(concat(module.vcn.nat_instance_ad1_public_ips,module.vcn.nat_instance_ad2_public_ips,module.vcn.nat_instance_ad3_public_ips))}"
+#   private_key      = "${module.k8s-tls.ssh_private_key}"
+#   source           = "./nginx"
+#   hosts            = "${concat(module.vcn.nat_instance_ad1_public_ips,module.vcn.nat_instance_ad2_public_ips,module.vcn.nat_instance_ad3_public_ips)}"
+# }
+
 module "kubeconfig" {
   source                     = "./kubernetes/kubeconfig"
   api_server_private_key_pem = "${module.k8s-tls.api_server_private_key_pem}"
   api_server_cert_pem        = "${module.k8s-tls.api_server_cert_pem}"
-  k8s_master                 = "{module.k8smaster-public-lb.k8s_master_ip}"
+  k8s_master                 = "{local.master_address}"
 }
