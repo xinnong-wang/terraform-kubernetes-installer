@@ -55,31 +55,37 @@ variable "api_server_cert_pem" {}
 
 # etcd
 variable "etcd_discovery_url" {}
+
 variable "etcd_endpoints" {}
 
 variable "worker_docker_max_log_size" {
   description = "Maximum size of the k8s worker docker container json logs"
-  default = "50m"
+  default     = "50m"
 }
+
 variable "worker_docker_max_log_files" {
   description = "Maximum number of the k8s worker docker container json logs to rotate"
-  default = "5"
+  default     = "5"
 }
 
 # iSCSI
 variable "worker_iscsi_volume_create" {
   description = "Bool if an iscsi volume should be attached and mounted at /var/lib/docker"
-  default = false
+  default     = false
 }
 
 variable "worker_iscsi_volume_size" {
   description = "Size of iscsi volume to be created"
-  default = 50
+  default     = 50
 }
 
 variable "worker_iscsi_volume_mount" {
   description = "Mount point of iscsi volume"
-  default = "/var/lib/docker"
+  default     = "/var/lib/docker"
 }
 
 variable "flexvolume_driver_version" {}
+
+variable "nginx_setup" {}
+
+variable "nginx_clount_init" {}

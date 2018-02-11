@@ -1,9 +1,7 @@
 # Outputs
 
 output "ip_addresses" {
-  # value = "${flatten(oci_load_balancer.lb-k8smaster.*.ip_addresses)}"
-  value = ["22", "33"]
-  # value = "${var.master_lb_enabled=="false" ? oci_load_balancer.lb-k8smaster.*.ip_addresses[0] : "127.0.0.1"}"
+  value = "${flatten(oci_load_balancer.lb-k8smaster.*.ip_addresses)}"
 }
 
 output "load_balancer_id" {

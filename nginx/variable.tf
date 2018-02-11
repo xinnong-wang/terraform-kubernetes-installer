@@ -9,13 +9,3 @@ variable "listen_port" {
 variable "hosts" {
   type = "list"
 }
-
-variable "count" {
-  default = "0"
-}
-
-variable "user" {
-  default = "opc"
-}
-
-variable "private_key" {}
