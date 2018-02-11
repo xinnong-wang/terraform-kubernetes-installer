@@ -33,3 +33,4 @@ output "etcdAd1Count333" {
 output "dd2" {
   value = "${var.etcdAd1Count>0?1:0}"
 }
+

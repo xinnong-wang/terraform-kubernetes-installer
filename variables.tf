@@ -339,6 +339,10 @@ variable "k8s_master_lb_access" {
   default     = "public"
 }
 
+variable "master_maintain_private_ip" {
+  default     = "false"
+}
+
 variable "etcd_lb_access" {
   description = "Whether etcd load balancer is launched in a public or private subnet"
   default     = "private"

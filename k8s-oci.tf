@@ -106,17 +106,18 @@ module "instances-etcd-ad1" {
   availability_domain         = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
   compartment_ocid            = "${var.compartment_ocid}"
   control_plane_subnet_access = "${var.control_plane_subnet_access}"
-  display_name                = "etcd-ad1"
+  display_name_prefix         = "etcd-ad1"
   domain_name                 = "${var.domain_name}"
   etcd_discovery_url          = "${template_file.etcd_discovery_url.id}"
   flannel_backend             = "${var.flannel_backend}"
   flannel_network_cidr        = "10.99.0.0/16"
   flannel_network_subnetlen   = 24
-  hostname_label              = "etcd-ad1"
+  hostname_label_prefix       = "etcd-ad1"
   oracle_linux_image_name     = "${var.etcd_ol_image_name}"
   label_prefix                = "${var.label_prefix}"
   shape                       = "${var.etcdShape}"
   ssh_public_key_openssh      = "${module.k8s-tls.ssh_public_key_openssh}"
+  network_cidrs               = "${var.network_cidrs}"
   subnet_id                   = "${module.vcn.etcd_subnet_ad1_id}"
   subnet_name                 = "etcdSubnetAD1"
   tenancy_ocid                = "${var.compartment_ocid}"
@@ -133,17 +134,18 @@ module "instances-etcd-ad2" {
   availability_domain         = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[1],"name")}"
   compartment_ocid            = "${var.compartment_ocid}"
   control_plane_subnet_access = "${var.control_plane_subnet_access}"
-  display_name                = "etcd-ad2"
+  display_name_prefix         = "etcd-ad2"
   domain_name                 = "${var.domain_name}"
   etcd_discovery_url          = "${template_file.etcd_discovery_url.id}"
   flannel_backend             = "${var.flannel_backend}"
   flannel_network_cidr        = "10.99.0.0/16"
   flannel_network_subnetlen   = 24
-  hostname_label              = "etcd-ad2"
+  hostname_label_prefix       = "etcd-ad2"
   oracle_linux_image_name     = "${var.etcd_ol_image_name}"
   label_prefix                = "${var.label_prefix}"
   shape                       = "${var.etcdShape}"
   ssh_public_key_openssh      = "${module.k8s-tls.ssh_public_key_openssh}"
+  network_cidrs               = "${var.network_cidrs}"
   subnet_id                   = "${module.vcn.etcd_subnet_ad2_id}"
   subnet_name                 = "etcdSubnetAD2"
   tenancy_ocid                = "${var.compartment_ocid}"
@@ -160,7 +162,7 @@ module "instances-etcd-ad3" {
   availability_domain         = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[2],"name")}"
   compartment_ocid            = "${var.compartment_ocid}"
   control_plane_subnet_access = "${var.control_plane_subnet_access}"
-  display_name                = "etcd-ad3"
+  display_name_prefix         = "etcd-ad3"
   docker_ver                  = "${var.docker_ver}"
   domain_name                 = "${var.domain_name}"
   etcd_discovery_url          = "${template_file.etcd_discovery_url.id}"
@@ -168,11 +170,12 @@ module "instances-etcd-ad3" {
   flannel_backend             = "${var.flannel_backend}"
   flannel_network_cidr        = "10.99.0.0/16"
   flannel_network_subnetlen   = 24
-  hostname_label              = "etcd-ad3"
+  hostname_label_prefix       = "etcd-ad3"
   oracle_linux_image_name     = "${var.etcd_ol_image_name}"
   label_prefix                = "${var.label_prefix}"
   shape                       = "${var.etcdShape}"
   ssh_public_key_openssh      = "${module.k8s-tls.ssh_public_key_openssh}"
+  network_cidrs               = "${var.network_cidrs}"
   subnet_id                   = "${module.vcn.etcd_subnet_ad3_id}"
   subnet_name                 = "etcdSubnetAD3"
   tenancy_ocid                = "${var.compartment_ocid}"
@@ -192,6 +195,7 @@ module "instances-k8smaster-ad1" {
   availability_domain         = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
   k8s_apiserver_token_admin   = "${module.k8s-tls.api_server_admin_token}"
   compartment_ocid            = "${var.compartment_ocid}"
+  control_plane_subnet_access = "${var.control_plane_subnet_access}"
   display_name_prefix         = "k8s-master-ad1"
   docker_ver                  = "${var.docker_ver}"
   master_docker_max_log_size  = "${var.master_docker_max_log_size}"
@@ -210,7 +214,9 @@ module "instances-k8smaster-ad1" {
   shape                       = "${var.k8sMasterShape}"
   ssh_private_key             = "${module.k8s-tls.ssh_private_key}"
   ssh_public_key_openssh      = "${module.k8s-tls.ssh_public_key_openssh}"
+  network_cidrs               = "${var.network_cidrs}"
   subnet_id                   = "${module.vcn.k8smaster_subnet_ad1_id}"
+  subnet_name                 = "masterSubnetAD1"
   tenancy_ocid                = "${var.compartment_ocid}"
   cloud_controller_version    = "${var.cloud_controller_version}"
   cloud_controller_secret     = "${module.oci-cloud-controller.cloud-provider-json}"
@@ -226,6 +232,8 @@ module "instances-k8smaster-ad1" {
                                                               module.instances-etcd-ad1.private_ips,
                                                               module.instances-etcd-ad2.private_ips,
                                                               module.instances-etcd-ad3.private_ips)))) }"
+
+  assign_private_ip = "${var.master_maintain_private_ip}"
 }
 
 module "instances-k8smaster-ad2" {
@@ -237,6 +245,7 @@ module "instances-k8smaster-ad2" {
   availability_domain         = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[1],"name")}"
   k8s_apiserver_token_admin   = "${module.k8s-tls.api_server_admin_token}"
   compartment_ocid            = "${var.compartment_ocid}"
+  control_plane_subnet_access = "${var.control_plane_subnet_access}"
   display_name_prefix         = "k8s-master-ad2"
   docker_ver                  = "${var.docker_ver}"
   master_docker_max_log_size  = "${var.master_docker_max_log_size}"
@@ -255,7 +264,9 @@ module "instances-k8smaster-ad2" {
   shape                       = "${var.k8sMasterShape}"
   ssh_private_key             = "${module.k8s-tls.ssh_private_key}"
   ssh_public_key_openssh      = "${module.k8s-tls.ssh_public_key_openssh}"
+  network_cidrs               = "${var.network_cidrs}"
   subnet_id                   = "${module.vcn.k8smaster_subnet_ad2_id}"
+  subnet_name                 = "masterSubnetAD2"
   tenancy_ocid                = "${var.compartment_ocid}"
   cloud_controller_version    = "${var.cloud_controller_version}"
   cloud_controller_secret     = "${module.oci-cloud-controller.cloud-provider-json}"
@@ -271,6 +282,8 @@ module "instances-k8smaster-ad2" {
                                                               module.instances-etcd-ad1.private_ips,
                                                               module.instances-etcd-ad2.private_ips,
                                                               module.instances-etcd-ad3.private_ips)))) }"
+
+  assign_private_ip = "${var.master_maintain_private_ip}"
 }
 
 module "instances-k8smaster-ad3" {
@@ -282,6 +295,7 @@ module "instances-k8smaster-ad3" {
   availability_domain         = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[2],"name")}"
   k8s_apiserver_token_admin   = "${module.k8s-tls.api_server_admin_token}"
   compartment_ocid            = "${var.compartment_ocid}"
+  control_plane_subnet_access = "${var.control_plane_subnet_access}"
   display_name_prefix         = "k8s-master-ad3"
   docker_ver                  = "${var.docker_ver}"
   master_docker_max_log_size  = "${var.master_docker_max_log_size}"
@@ -300,7 +314,9 @@ module "instances-k8smaster-ad3" {
   shape                       = "${var.k8sMasterShape}"
   ssh_private_key             = "${module.k8s-tls.ssh_private_key}"
   ssh_public_key_openssh      = "${module.k8s-tls.ssh_public_key_openssh}"
+  network_cidrs               = "${var.network_cidrs}"
   subnet_id                   = "${module.vcn.k8smaster_subnet_ad3_id}"
+  subnet_name                 = "masterSubnetAD3"
   tenancy_ocid                = "${var.compartment_ocid}"
   cloud_controller_version    = "${var.cloud_controller_version}"
   cloud_controller_secret     = "${module.oci-cloud-controller.cloud-provider-json}"
@@ -316,6 +332,8 @@ module "instances-k8smaster-ad3" {
                                                               module.instances-etcd-ad1.private_ips,
                                                               module.instances-etcd-ad2.private_ips,
                                                               module.instances-etcd-ad3.private_ips)))) }"
+
+  assign_private_ip = "${var.master_maintain_private_ip}"
 }
 
 module "instances-k8sworker-ad1" {
